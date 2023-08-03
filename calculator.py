@@ -82,6 +82,7 @@ def GiveResault():  # поступает строка
         ClearBoard()
         NowElements = 0
         calc.insert(0, 'Вы не дописали число!')
+        NeedToClear = True
         return
 
     ClearBoard()
