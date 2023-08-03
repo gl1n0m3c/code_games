@@ -1,18 +1,27 @@
 # MY CALCULATOR
 # PART WITH FUNCTIOUS
 def ClearBoard():
+    global NowElements
     global CanInsert
     calc.delete(0, 'end')
     CanInsert = False
+    NowElements = 0
 
 def AddOnEntry(value):
     global MaxElements
     global NowElements
     global CanInsert
+    global NeedToClear
     if NowElements > MaxElements:
         ClearBoard()
         calc.insert(0, 'Превышено количество элементов!')
+        NowElements = 0
+        NeedToClear = True
         return 
+    if NeedToClear:
+        ClearBoard()
+        NeedToClear = False
+        NowElements = 0
     if value.isdigit():
         CanInsert = True
     if CanInsert:
@@ -28,26 +37,31 @@ def AddOnEntry(value):
         CanInsert = False
 
 def GiveResault():  # поступает строка
-    global NeetToClear
+    global NowElements
+    global NeedToClear
     global CanInsert
     value = calc.get()
     array = value.split()
+    if len(array) == 0:
+        return
     if array[-1].isdigit():
         while len(array) != 1:
             flag = False
             for i in range(len(array)):
                 if array[i] == '*':
-                    array[i - 1] = int(array[i - 1]) * int(array[i + 1])
+                    array[i - 1] = float(array[i - 1]) * float(array[i + 1])
                     array.pop(i)
                     array.pop(i)
                     flag = True
                     break
                 elif array[i] == '/':
-                    if int(array[i + 1]) == 0:
+                    if float(array[i + 1]) == 0:
                         ClearBoard()
                         calc.insert(0, 'Делить на 0 нельзя!')
+                        NowElements = 0
+                        NeedToClear = True
                         return
-                    array[i - 1] = int(array[i - 1]) / int(array[i + 1])
+                    array[i - 1] = float(array[i - 1]) / float(array[i + 1])
                     array.pop(i)
                     array.pop(i)
                     flag = True
@@ -55,32 +69,35 @@ def GiveResault():  # поступает строка
             if flag == False:
                 for i in range(len(array)):
                     if array[i] == '+':
-                        array[i - 1] = int(array[i - 1]) + int(array[i + 1])
+                        array[i - 1] = float(array[i - 1]) + float(array[i + 1])
                         array.pop(i)
                         array.pop(i)
                         break
                     elif array[i] == '-':
-                        array[i - 1] = int(array[i - 1]) - int(array[i + 1])
+                        array[i - 1] = float(array[i - 1]) - float(array[i + 1])
                         array.pop(i)
                         array.pop(i)
                         break
     else:
         ClearBoard()
-        calc.insert(0, 'Преобразования невозможны, вы не дописали число!')
+        NowElements = 0
+        calc.insert(0, 'Вы не дописали число!')
         return
 
     ClearBoard()
     if len(str(array[0])) > 2 and  str(array[0])[-2:] == '.0':
         calc.insert(0, str(array[0])[:-2])
+        NowElements = len(str(array[0])[:-2])
     else:
         calc.insert(0, array[0])
-        CanInsert = True
+        NowElements = len(str(array[0]))
+    CanInsert = True
 
 # PART WITH tkinter
 
 import tkinter as tk
 
-NeetToClear = CanInsert = False
+NeedToClear = CanInsert = False
 MaxElements = 40
 NowElements = 0
 
@@ -88,6 +105,8 @@ win = tk.Tk()
 win.geometry('480x520+200+100')
 win.title('Калькулятор')
 win['bg'] = '#A3887B'
+win.resizable(False, False)
+
 
 calc = tk.Entry(win, bd=5, font=('Arial', 20))
 calc.grid(row=0, column=0, sticky='nswe', columnspan=4, ipadx=5, ipady=5)
@@ -113,6 +132,4 @@ for i in range(4):
     win.grid_columnconfigure(i, minsize=120)
     win.grid_rowconfigure(i + 1, minsize=104)
 
-
-
-win.mainloop()
+win.mainloop()  # запуск
