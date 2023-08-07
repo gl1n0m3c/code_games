@@ -19,7 +19,6 @@ class MyButton(tk.Button):
     def __repr__(self):
         return f'Button {self.number} ({self.row} {self.column})'
 
-
 class Minesweeper():
 
     ROWS = 5
@@ -84,8 +83,16 @@ class Minesweeper():
         shuffle(a)
         return a[:Minesweeper.MINES]
 
+    def check_iswin(self):
+        count = 0
+        for i in range(1, Minesweeper.ROWS + 1):
+            for j in range(1, Minesweeper.COLUMNS + 1):
+                btn = self.buttons[i][j]
+                if btn['relief'] == 'sunken':
+                    count += 1
+        return count == (Minesweeper.ROWS * Minesweeper.COLUMNS - Minesweeper.MINES)
+
     def click(self, clicked_button: MyButton):
-        
         if Minesweeper.IS_GAMEOVER:
             return None
 
@@ -106,9 +113,18 @@ class Minesweeper():
                         btn['text'] = '*'
         else:
             if 1 <= clicked_button.bombs <= 8:  # изменить на кол-во бомб
-                clicked_button.config(text=clicked_button.bombs, disabledforeground=colors[clicked_button.bombs - 1], state='disabled')
+                clicked_button.config(text=clicked_button.bombs, disabledforeground=colors[clicked_button.bombs - 1], state='disabled', relief='sunken')
+
             elif clicked_button.bombs == 0:
                 self.open_neighbours(clicked_button)
+        
+        if self.check_iswin():
+            showinfo('Game over', 'Вы выиграли, поздравляем!')
+            for i in range(1, Minesweeper.ROWS + 1):
+                for j in range(1, Minesweeper.COLUMNS + 1):
+                    btn = self.buttons[i][j]
+                    if btn.is_mine:
+                        btn['text'] = '*'
 
     def make_bombs(self, n):
         array = self.create_indexes_of_bombs(n)
@@ -189,6 +205,11 @@ class Minesweeper():
         except:
             showerror('Ошибка', 'Вы ввели неправильное значение')
             return None
+        
+        if int(row.get()) * int(column.get()) <= int(mines.get()) + 1:
+            showerror('Ошибка', 'Невозможно играть при таком количестве бомб!')
+            return None
+
         Minesweeper.ROWS    = int(row.get())
         Minesweeper.COLUMNS = int(column.get())
         Minesweeper.MINES   = int(mines.get())
